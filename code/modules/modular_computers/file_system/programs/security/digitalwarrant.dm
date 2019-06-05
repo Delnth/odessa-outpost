@@ -19,7 +19,7 @@ LEGACY_RECORD_STRUCTURE(all_warrants, warrant)
 	name = "Warrant Assistant"
 	var/datum/computer_file/data/warrant/activewarrant
 
-/datum/nano_module/digitalwarrant/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null, var/force_open = 1, var/datum/topic_state/state = GLOB.default_state)
+/datum/nano_module/digitalwarrant/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null, var/force_open = NANOUI_FOCUS, var/datum/topic_state/state = GLOB.default_state)
 	var/list/data = host.initial_data()
 
 	if(activewarrant)
@@ -162,11 +162,11 @@ LEGACY_RECORD_STRUCTURE(all_warrants, warrant)
 
 	if(href_list["editwarrantcharges"])
 		. = 1
-		var/new_charges = sanitize(input_utf8("Please input charges", "Charges", activewarrant.fields["charges"], type = "text"))
+		var/new_charges = sanitize(input("Please input charges", "Charges", activewarrant.fields["charges"]) as text|null)
 		if(CanInteract(user, GLOB.default_state))
 			if (!new_charges || !activewarrant)
 				return
-			activewarrant.fields["charges"] = cyrillic_to_unicode(new_charges)
+			activewarrant.fields["charges"] = new_charges
 
 	if(href_list["editwarrantauth"])
 		. = 1

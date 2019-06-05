@@ -93,7 +93,7 @@
 				stat("Chemical Storage", mind.changeling.chem_charges)
 				stat("Genetic Damage Time", mind.changeling.geneticdamage)
 
-		var/obj/item/weapon/implant/core_implant/cruciform/C = get_cruciform()
+		var/obj/item/weapon/implant/core_implant/cruciform/C = get_core_implant(/obj/item/weapon/implant/core_implant/cruciform)
 		if (C)
 			stat("Cruciform", "[C.power]/[C.max_power]")
 
@@ -1124,7 +1124,7 @@ var/list/rank_prefix = list(\
 #define MODIFICATION_REMOVED 3
 
 //Needed for augmentation
-/mob/living/carbon/human/proc/rebuild_organs(var/from_preference = 0)
+/mob/living/carbon/human/proc/rebuild_organs(from_preference)
 	if(!species)
 		return 0
 
@@ -1158,18 +1158,24 @@ var/list/rank_prefix = list(\
 			var/datum/body_modification/PBM = Pref.get_modification(OD.parent_organ)
 			if(PBM && (PBM.nature == MODIFICATION_SILICON || PBM.nature == MODIFICATION_REMOVED))
 				BM = PBM
-			if(BM.is_allowed(tag, Pref))
+			if(BM.is_allowed(tag, Pref, src))
 				BM.create_organ(src, OD, Pref.modifications_colors[tag])
 			else
 				OD.create_organ(src)
 
 		for(var/tag in species.has_organ)
 			BM = Pref.get_modification(tag)
-			if(BM.is_allowed(tag, Pref))
+			if(BM.is_allowed(tag, Pref, src))
 				BM.create_organ(src, species.has_organ[tag], Pref.modifications_colors[tag])
 			else
 				var/organ_type = species.has_organ[tag]
 				new organ_type(src)
+
+		// Qualifies for a cruciform: spawn it and install it
+		if(Pref.religion == "NeoTheology" || (mind && mind.assigned_job && mind.assigned_job.department == DEPARTMENT_CHURCH))
+			var/obj/item/weapon/implant/core_implant/cruciform/C = new /obj/item/weapon/implant/core_implant/cruciform
+			C.install(src)
+			C.activate()
 
 	else
 		var/organ_type = null
@@ -1295,9 +1301,9 @@ var/list/rank_prefix = list(\
 		var/msg = trim(replacetext(flavor_text, "\n", " "))
 		if(!msg) return ""
 		if(lentext(msg) <= 40)
-			return "<font color='blue'>[russian_to_cp1251(msg)]</font>"
+			return "<font color='blue'>[msg]</font>"
 		else
-			return "<font color='blue'>[copytext_preserve_html(russian_to_cp1251(msg), 1, 37)]... <a href='byond://?src=\ref[src];flavor_more=1'>More...</a></font>"
+			return "<font color='blue'>[copytext_preserve_html(msg, 1, 37)]... <a href='byond://?src=\ref[src];flavor_more=1'>More...</a></font>"
 	return ..()
 
 /mob/living/carbon/human/getDNA()
